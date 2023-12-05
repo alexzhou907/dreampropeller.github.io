@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="DreamPropeller accelerates Text-to-3D generation via Score Distillation Sampling or Variational Score Distillation.">
+  <meta name="keywords" content="Text-to-3D, diffusion models">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DreamPropeller: Supercharge Text-to-3D Generation with Parallel Sampling</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body" style="padding: 3rem 3rem 0rem;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">DreamPropeller: Supercharge Text-to-3D Generation with Parallel Sampling</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://alexzhou907.github.io/">Linqi Zhou</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://cs.stanford.edu/~andyshih/">Andy Shih</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://cs.stanford.edu/~chenlin/">Chenlin Meng</a><sup>1,2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://cs.stanford.edu/~ermon/">Stefano Ermon</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Stanford University,</span>
+            <span class="author-block"><sup>2</sup>Pika Labs</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2311.17082.pdf"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2311.17082"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/alexzhou907/DreamPropeller"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+             
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Recent methods such as Score Distillation Sampling (SDS) and Variational Score Distillation (VSD) using 2D diffusion models for text-to-3D generation have demonstrated impressive generation quality. However, the long generation time of such algorithms significantly degrades the user experience. To tackle this problem, we propose DreamPropeller, a drop-in acceleration algorithm that can be wrapped around any existing text-to-3D generation pipeline based on score distillation. Our framework generalizes <i>Picard iterations</i>, a classical algorithm for parallel sampling an ODE path, and can account for non-ODE paths such as momentum-based gradient updates and changes in dimensions during the optimization process as in many cases of 3D generation. We show that our algorithm trades parallel compute for wallclock time and empirically achieves up to 4.7x speedup with a negligible drop in generation quality for all tested frameworks.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Overview</h2>
+         <img src="./static/images/main.png"
+                 alt="Given image." width="100%"/>
+        <div class="content has-text-justified">
+          <p>
+            Starting from top left, for iteration <i>k</i>, we initialize a window of 3D shapes (in green) with dimension <i>D</i> and dispatch them to <i>p</i> GPUs for parallelly computing the SDS/VSD gradients, which are gathered for rollout using the generalized iteration rule. The resulting shapes (in orange) for iteration <i>k+1</i> are compared to those in iteration <i>k</i>. The window is slid forward until the error at that time step is not smaller than the threshold <i>e</i>, which is adaptively updated with the mean/median error of the window. Optionally, in the case of VSD, we keep independent copies of LoRA diffusion on all GPUs which are updated independently without extra communication.
+          </p>
+        </div>
+      </div>
+    </div> -->
+
+  </div>
+</section>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Accelerating Text-to-3D Generation</h2>
+
+        <div class="content has-text-justified">
+    <p style="margin-bottom: 2rem">Our accelerator can be wrapped around all existing SDS/VSD-based 3D generation and achieves significant speedup without quality degradation. We do observe slight visual differences with DreamPropeller. This is likely due to randomness in GPU allocation and differences of each GPU's internal state, and with non-zero fixed-point error, momentum-based gradient update brings generation to different local minima. Samples within each comparison are run to the same number of total steps. </p>
+    </div>
+
+
+    <div class="hero-body is-3 has-text-centered" style="padding-bottom: 0;">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>ProlificDreamer-Coarse</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>ProlificDreamer-Coarse</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_house.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_pineapple.mp4"
+                    type="video/mp4">
+          </video>
+          
+    </div>
+
+    
+    <div class="hero-body is-3 has-text-centered" style="padding-bottom: 0;">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>ProlificDreamer-Geometry</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>ProlificDreamer-Geometry</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_house_geo.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_pineapple_geo.mp4"
+                    type="video/mp4">
+          </video>
+          
+    </div>
+
+    <div class="hero-body is-3 has-text-centered">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>ProlificDreamer-Texture</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>ProlificDreamer-Texture</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_house_tex.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/prolificdreamer_pineapple_tex.mp4"
+                    type="video/mp4">
+          </video>
+        <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td ><i>"a detailed Victorian era house"</i></td>
+                  <td ><i>"a pineapple"</i></td>
+              </tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div class="hero-body is-3 has-text-centered">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>DreamFusion</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>DreamFusion</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/dreamfusion_icecream.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/dreamfusion_mushroom.mp4"
+                    type="video/mp4">
+          </video>
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td ><i>"an ice cream sundae"</i></td>
+                  <td ><i>"a brightly colored mushroom growing on a log"</i></td>
+              </tr>
+          </tbody>
+      </table>
+    </div>
+
+
+    <div class="hero-body is-3 has-text-centered">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>DreamGaussian</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>DreamGaussian</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/dreamgaussian_tower.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/dreamgaussian_icecream.mp4"
+                    type="video/mp4">
+          </video>
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td ><i>"the leaning tower of Pisa, aerial view"</i></td>
+                  <td ><i>"an ice cream"</i></td>
+              </tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div class="hero-body is-3 has-text-centered" style="padding-bottom: 0;">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>Magic3D-Coarse</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>Magic3D-Coarse</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/magic3d_coarse_dress.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/magic3d_coarse_tulip.mp4"
+                    type="video/mp4">
+          </video>
+      <!-- <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <tbody>
+              <tr>
+                  <td ><i>"a beautiful dress made out of fruit, on a mannequin. Studio lighting, high quality, high resolution"</i></td>
+                  <td ><i>"a DSLR photo of a blue tulip"</i></td>
+              </tr>
+          </tbody>
+      </table> -->
+    </div>
+
+
+    <div class="hero-body is-3 has-text-centered">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>Magic3D-Refine</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>Magic3D-Refine</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/magic3d_refine_dress.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/magic3d_refine_tulip.mp4"
+                    type="video/mp4">
+          </video>
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td ><i>"a beautiful dress made out of fruit, on a mannequin. Studio lighting, high quality, high resolution"</i></td>
+                  <td ><i>"a DSLR photo of a blue tulip"</i></td>
+              </tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div class="hero-body is-3 has-text-centered">
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+            <col span="1" style="width: 25%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>TextMesh</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td ><b>TextMesh</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+      <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/textmesh_squirrel.mp4"
+                    type="video/mp4">
+          </video>
+        <video id="replay-video" autoplay controls muted loop playsinline width="49%">
+            <source src="./static/videos/textmesh_car.mp4"
+                    type="video/mp4">
+          </video>
+      <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 50%;">
+            <col span="1" style="width: 50%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td ><i>"a wide angle DLSR photo of a squirrel in samurai armor wielding a katana"</i></td>
+                  <td ><i>"an old vintage car"</i></td>
+              </tr>
+          </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop has-text-centered">
+    <h2 class="title is-3 has-text-centered">Application to Image-to-3D Generation</h2>
+    <div class="content has-text-justified">
+    <p style="margin-bottom: 2rem">Our accelerator can also speed up Image-to-3D generation guided by score distillation. We test on NeRF and 3D Gaussian Splatting, both of which are guided by Zero 1-to-3.</p>
+    </div>
+
+    <table style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 16%;">
+            <col span="1" style="width: 16%;">
+            <col span="1" style="width: 16%;">
+            <col span="1" style="width: 16%;">
+            <col span="1" style="width: 16%;">
+            <col span="1" style="width: 16%;">
+          </colgroup>
+          
+          
+          
+          <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+          <tbody>
+              <tr>
+                  <td > <b>Source</b></td>
+                  <td ><b>NeRF</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+                  <td > <b>Source</b></td>
+                  <td ><b>NeRF</b></td>
+                  <td ><b>+DreamPropeller</b></td>
+              </tr>
+          </tbody>
+      </table>
+    <div class="title is-3 has-text-centered">
+      <img src="./static/images/dog.png"
+                 alt="Given image." width="16%"/>
+
+      <video id="replay-video" autoplay controls muted loop playsinline width="32%">
+            <source src="./static/videos/zero123_dog.mp4"
+                    type="video/mp4">
+          </video>
+      
+      
+      <img src="./static/images/groot.png"
+                 alt="Given image." width="16%"/>
+
+        <video id="replay-video" autoplay controls muted loop playsinline width="32%">
+            <source src="./static/videos/zero123_groot.mp4"
+                    type="video/mp4">
+          </video>
+     
+    </div>
+
+    <table style="width: 100%">
+        <colgroup>
+          <col span="1" style="width: 16%;">
+          <col span="1" style="width: 16%;">
+          <col span="1" style="width: 16%;">
+          <col span="1" style="width: 16%;">
+          <col span="1" style="width: 16%;">
+          <col span="1" style="width: 16%;">
+        </colgroup>
+        
+        
+        
+        <!-- Put <thead>, <tbody>, and <tr>'s here! -->
+        <tbody>
+            <tr>
+                <td > <b>Source</b></td>
+                <td ><b>3DGS</b></td>
+                <td ><b>+DreamPropeller</b></td>
+                <td > <b>Source</b></td>
+                <td ><b>3DGS</b></td>
+                <td ><b>+DreamPropeller</b></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="title is-3 has-text-centered">
+      <img src="./static/images/lantern.png"
+                  alt="Given image." width="16%"/>
+
+      <video id="replay-video" autoplay controls muted loop playsinline width="32%">
+            <source src="./static/videos/dreamgaussian_lantern.mp4"
+                    type="video/mp4">
+          </video>
+      
+      
+      <img src="./static/images/sword.png"
+                  alt="Given image." width="16%"/>
+
+        <video id="replay-video" autoplay controls muted loop playsinline width="32%">
+            <source src="./static/videos/dreamgaussian_sword.mp4"
+                    type="video/mp4">
+          </video>
+      
+    </div>
+
+  </div>
+
+  
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{zhou2023dreampropeller,
+  title={DreamPropeller: Supercharge Text-to-3D Generation with Parallel Sampling},
+  author={Zhou, Linqi and Shih, Andy and Meng, Chenlin and Ermon, Stefano},
+  journal={arXiv preprint arXiv:2311.17082},
+  year={2023}
+}</code></pre>
+  </div>
+</section>
+
+
+</body>
+</html>
